@@ -121,7 +121,7 @@ int read_ir_sensors() {
     }
 
     // 2. 设置从设备地址 (0x12)
-    if (ioctl(i2c_fd, I2C_SLAVE, 0x12) < 0) {
+    if (ioctl(i2c_fd, I2C_SLAVE, 0x56) < 0) {
         perror("Failed to set I2C address");
         close(i2c_fd);
         exit(EXIT_FAILURE);
@@ -163,7 +163,7 @@ int read_ir_sensors() {
     return my_turn(reir_sensor);
 }
 
-int main_det() {
+int main() {
     if(wiringXSetup("milkv_duo", NULL) == -1) {
         wiringXGC();
         return -1;
@@ -193,25 +193,26 @@ int main_det() {
         if(output>0){
             printf("turn right\n");
             float ans=fmin(output,4.0);
-            float y=-150000*ans+1500000;
+            // float y=-150000*ans+1500000; 
+            float y=125000*ans+1300000;
             printf("y=%f\n",y);
             wiringXPWMSetDuty(PWM_PIN, y);
-            delayMicroseconds(5000);
+            delayMicroseconds(50000);
 
         }
         else {
             printf("turn left\n");
             float ans=fmax(output,-4.0);
-            float y=-225000*ans+1500000;
+            float y=125000*ans+1300000;
             printf("y=%f\n",y);
             wiringXPWMSetDuty(PWM_PIN, y);
-            delayMicroseconds(5000);
+            delayMicroseconds(50000);
         }
 
         last_error=error;
         integral+=error;
         derivative=error-last_error;    
-        usleep(10000);  // 10ms
+        usleep(100000);  // 10ms
     }
     return 0;
 }
