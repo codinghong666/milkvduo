@@ -133,12 +133,12 @@ int main() {
     pinMode(ain2, PINMODE_OUTPUT);
     pinMode(bin1, PINMODE_OUTPUT);
     pinMode(bin2, PINMODE_OUTPUT);
-    pinMode(encoder_a, PINMODE_INPUT);
-    pinMode(encoder_b, PINMODE_INPUT);
+    // pinMode(encoder_a, PINMODE_INPUT);
+    // pinMode(encoder_b, PINMODE_INPUT);
 
-    // 设置编码器中断
-    wiringXISR(encoder_a, ISR_MODE_RISING);  // 在 A 相上升沿触发中断
-    wiringXISR(encoder_b, ISR_MODE_RISING);  // 在 B 相上升沿触发中断
+    // // 设置编码器中断
+    // wiringXISR(encoder_a, ISR_MODE_RISING);  // 在 A 相上升沿触发中断
+    // wiringXISR(encoder_b, ISR_MODE_RISING);  // 在 B 相上升沿触发中断
 
     // 启动电机
     my_move(30000, 0);  // 逆时针旋转

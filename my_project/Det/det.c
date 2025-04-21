@@ -121,7 +121,7 @@ int read_ir_sensors() {
     }
 
     // 2. 设置从设备地址 (0x12)
-    if (ioctl(i2c_fd, I2C_SLAVE, 0x56) < 0) {
+    if (ioctl(i2c_fd, I2C_SLAVE, 0x12) < 0) {
         perror("Failed to set I2C address");
         close(i2c_fd);
         exit(EXIT_FAILURE);
