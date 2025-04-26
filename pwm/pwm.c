@@ -291,7 +291,8 @@
 #include <stdbool.h>
 int pwm_pin1 = 4,pwm_pin2=5;
 int duty = 30000;
-int ain1 = 14, ain2 = 15,bin1=16,bin2=17;
+int ain1 = 14, ain2 = 15;
+int bin1=16,bin2=17;
 int T=100000;
 void my_move(int speed, bool dir) {
     // 0 后退 1 前进
@@ -343,21 +344,12 @@ int main() {
    pinMode(bin2, PINMODE_OUTPUT);
 
    // 限制占空比范围
-   digitalWrite(bin1, LOW);
-   digitalWrite(bin2, HIGH);
-   wiringXPWMSetDuty(pwm_pin2, 50000);
+   my_move(90000,true);
    sleep(2);
-   
-   digitalWrite(bin1, HIGH);
-   digitalWrite(bin2, LOW);
-   wiringXPWMSetDuty(pwm_pin2, 50000);
-   sleep(2);
-//    my_move(90000,true);
-//    sleep(2);
 
-//    my_move(30000,false);
-//    // 保持程序运行（防止退出后 PWM 停止）
-//    sleep(1);
+   my_move(30000,false);
+   // 保持程序运行（防止退出后 PWM 停止）
+   sleep(2);
    digitalWrite(ain1, LOW);   // 方向1
    digitalWrite(ain2, LOW);  // 方向2
    digitalWrite(bin1, LOW);   // 方向1

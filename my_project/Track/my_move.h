@@ -10,6 +10,6 @@ extern int ain1, ain2, bin1, bin2;
 extern int T;
 
 // 函数声明
-void my_move(int speed, bool dir);
+void my_move(int speed1, bool dir1,int speed2, bool dir2);
 
 #endif // MY_MOVE_H

@@ -10,10 +10,10 @@ int ir_sensor[8],reir_sensor[8];  // ir_sensor[0]对应最低位，ir_sensor[7]�
 int my_turn(int a[]){
     int sum=0,tot=0;
     for(int i=0;i<8;i++){
-        sum+=a[i]*(-4+i+(i>=4?1:0));
-        tot+=a[i];
+        sum+=(1-a[i])*(-4+i+(i>=4?1:0));
+        tot+=(1-a[i]);
     }
-    printf("%d %d %d\n",sum,tot,sum/tot);
+    // printf("%d %d %d\n",sum,tot,sum/tot);
     return sum/tot;
 
 }
@@ -60,12 +60,12 @@ int read_ir_sensors() {
     }
     
     // 7. 打印结果
-    printf("Raw Data: 0x%02X\n", data);
-    printf("IR Sensors Status:\n");
-    for (int i = 7; i >= 0; i--) {
-        printf("IR%d: %d  ", i + 1, ir_sensor[i]);
-    }
-    printf("\n");
+    // printf("Raw Data: 0x%02X\n", data);
+    // printf("IR Sensors Status:\n");
+    // for (int i = 7; i >= 0; i--) {
+    //     printf("IR%d: %d  ", i + 1, ir_sensor[i]);
+    // }
+    // printf("\n");
 
     // 8. 关闭 I2C 设备
     close(i2c_fd);
