@@ -8,9 +8,11 @@
 #include <math.h>
 #include"my_sensor.h"
 #include"my_move.h"
+#include"mpu.h"
 #include <signal.h>
 #define min(x, y) ((x) < (y) ? (x) : (y))
 #define max(x, y) ((x) > (y) ? (x) : (y))
+#define N 100005
 static int PWM_PIN = 6; // 9
 int err = 0;
 float error = 0.0;           // 当前误差
@@ -21,10 +23,11 @@ float output = 0.0;
 float Kp = 2.5;   // 比例系数
 float Ki = 0.01;  // 积分系数
 float Kd = 1.0;   // 微分系数       
-float P = 0.0;   // 比例项
-float I = 0.0;   // 积分项
-float D = 0.0;   // 微分项
+float P = 0.0, I = 0.0, D = 0.0;  
 int initial_speed=20000,additional_speed=5000;
+int cnt_mpu=0;
+bool overflow=0;
+short mpu_array[N];
 /*
 float Kp = 2.5;   // 比例系数
 float Ki = 0.01;  // 积分系数
@@ -37,6 +40,18 @@ void cleanup(void) {
     digitalWrite(ain2, LOW);
     digitalWrite(bin1, LOW);
     digitalWrite(bin2, LOW);
+    FILE *fp = fopen("mem.txt", "w");
+    if (fp == NULL) {
+        perror("无法打开 mem.txt 写入");
+    } else {
+        fprintf(fp, "%d\n", overflow);
+        fprintf(fp, "%d\n", cnt_mpu);
+        int len = cnt_mpu;
+        for (int i = 1; i <= len; ++i) {
+            fprintf(fp, "%d ", mpu_array[i]);
+        }
+        fclose(fp);
+    }
     // 关闭PWM，释放资源等
 }
 
@@ -55,6 +70,7 @@ int main() {
     pinMode(ain2, PINMODE_OUTPUT);
     pinMode(bin1, PINMODE_OUTPUT);
     pinMode(bin2, PINMODE_OUTPUT);
+    mpu6050_init();
     // 舵机
     // wiringXPWMSetPeriod(PWM_PIN, 20000000);  // 20ms
     // wiringXPWMSetDuty(PWM_PIN, 1500000);     // 1.5ms stop
@@ -103,6 +119,9 @@ int main() {
         integral+=error;
         derivative=error-last_error;    
         usleep(10000);  // 10ms
+        if(cnt_mpu<=N-5)
+            mpu_array[++cnt_mpu]= (short)(read_mpu6050_yaw()*100);
+        else overflow=1;
     }
     return 0;
 }

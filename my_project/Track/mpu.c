@@ -21,17 +21,6 @@ int i2c_fd = -1;
 GP7	10 SCL
 GP6 9 SDA
 */
-void cleanup() {
-    printf("释放资源...\n");
-    if (i2c_fd >= 0) {
-        close(i2c_fd);
-    }
-}
-
-void sigint_handler(int sig) {
-    cleanup();
-    exit(0);
-}
 
 int16_t read_word(uint8_t reg_high) {
     unsigned char buf[2];
