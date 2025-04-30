@@ -289,27 +289,73 @@
 #include <unistd.h>
 #include <wiringx.h>
 #include <stdbool.h>
+#define ENCODER_A 26
+#define ENCODER_B 27
 int pwm_pin1 = 4,pwm_pin2=5;
 int duty = 30000;
 int ain1 = 14, ain2 = 15;
 int bin1=16,bin2=17;
 int T=100000;
+const int PPR = 13;                      // 编码器线数
+const int PULSES_PER_REV = PPR * 4; 
+volatile int pulseCount = 0,current_revs=0;  
+volatile bool lastA = false, lastB = false;
+typedef unsigned char uint8_t;
+typedef signed char int8_t; 
+int abs(int x){
+    return x>0?x:-x;
+}
+const int8_t TRANSITIONS[16] = {
+    0,  // 00 -> 00
+    +1, // 00 -> 01
+    -1, // 00 -> 10
+    0,  // 00 -> 11
+    -1, // 01 -> 00
+    0,  // 01 -> 01
+    0,  // 01 -> 10
+    +1, // 01 -> 11
+    +1, // 10 -> 00
+    0,  // 10 -> 01
+    0,  // 10 -> 10
+    -1, // 10 -> 11
+    0,  // 11 -> 00
+    -1, // 11 -> 01
+    +1, // 11 -> 10
+    0   // 11 -> 11
+};
+void encoderISR() {
+    bool currentA = digitalRead(ENCODER_A);
+    bool currentB = digitalRead(ENCODER_B);
+
+    // 计算状态变化
+    uint8_t oldState = (lastA << 1) | lastB;
+    uint8_t newState = (currentA << 1) | currentB;
+    int8_t transition = (oldState << 2) | newState;
+
+    if (transition < 16) {
+        pulseCount += TRANSITIONS[transition];
+    }
+    // printf("ininin\n");
+    // 更新状态缓存
+    lastA = currentA;
+    lastB = currentB;
+    // printf("in");
+}
 void my_move(int speed, bool dir) {
     // 0 后退 1 前进
     if (dir) {
-        printf("dir = 1\n");
+        // printf("dir = 1\n");
         digitalWrite(bin1, LOW);
         digitalWrite(bin2, HIGH);
         digitalWrite(ain1, LOW);
         digitalWrite(ain2, HIGH);
     } else {
-        printf("dir = 0\n");
+        // printf("dir = 0\n");
         digitalWrite(bin1, HIGH);
         digitalWrite(bin2, LOW);
         digitalWrite(ain1, HIGH);
         digitalWrite(ain2, LOW);
     }
-
     wiringXPWMSetPeriod(pwm_pin1, T);
     wiringXPWMSetDuty(pwm_pin1, speed);
     wiringXPWMSetPolarity(pwm_pin1, 0);  // 极性（0 或 1）
@@ -320,7 +366,7 @@ void my_move(int speed, bool dir) {
     wiringXPWMSetPolarity(pwm_pin2, 0);  // 极性（0 或 1）
     wiringXPWMEnable(pwm_pin2, 1);       // 启用 PWM
 
-    usleep(1000);
+    usleep(1);
     return;
 }
 
@@ -342,14 +388,42 @@ int main() {
    pinMode(ain2, PINMODE_OUTPUT);
    pinMode(bin1, PINMODE_OUTPUT);
    pinMode(bin2, PINMODE_OUTPUT);
+   pinMode(ENCODER_A, PINMODE_INPUT);
+   pinMode(ENCODER_B, PINMODE_INPUT);
+//    lastA = digitalRead(ENCODER_A);
+//    lastB = digitalRead(ENCODER_B);
 
-   // 限制占空比范围
-   my_move(90000,true);
-   sleep(2);
+//    if (wiringXISR(ENCODER_A, ISR_MODE_RISING) < 0 ||wiringXISR(ENCODER_B, ISR_MODE_RISING) < 0) {
+//         fprintf(stderr, "中断注册失败\n");
+//         return 1;
+//     }
 
-   my_move(30000,false);
-   // 保持程序运行（防止退出后 PWM 停止）
-   sleep(2);
+//     while (1) {
+//         current_revs = pulseCount / PULSES_PER_REV;
+//         printf("当前圈数: %d\n", current_revs);
+//         my_move(duty, 1);  // 控制电机转动
+//         if (abs(current_revs) >= 30) {
+//             break;
+//         }
+//         usleep(100000);  // 100ms
+//     }
+
+//     // 停止电机
+//     digitalWrite(ain1, LOW);
+//     digitalWrite(ain2, LOW);
+//     digitalWrite(bin1, LOW);
+//     digitalWrite(bin2, LOW);
+   lastA = digitalRead(ENCODER_A);
+   lastB = digitalRead(ENCODER_B);
+   while(1){
+        current_revs = pulseCount / (PULSES_PER_REV);
+        encoderISR();
+        my_move(duty,1);
+        usleep(1);
+        if(abs(current_revs)>30)
+            break;
+        // printf("%d\n",current_revs);
+   }
    digitalWrite(ain1, LOW);   // 方向1
    digitalWrite(ain2, LOW);  // 方向2
    digitalWrite(bin1, LOW);   // 方向1

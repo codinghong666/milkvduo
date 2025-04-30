@@ -67,53 +67,56 @@ int main() {
     mpu6050_init();
     calibrate_gyro();
     tofInit(I2C_NUM, I2C_ADDR, 0);
-    my_turn(initial_speed,90);
-    my_turn(initial_speed,-90);
-    // while(1){
-    //     my_move(initial_speed,1,initial_speed,1);
-    //     int dis=tofReadDistance();
-    //     printf("%dmm\n",dis);
-    //     if(dis<=150){
-    //         my_move(0,0,0,0);
-    //         my_turn(initial_speed,90);
-    //         my_move(initial_speed,1,initial_speed,1);
-    //         usleep(500000); 
-    //         my_turn(initial_speed,-90);            
-    //         usleep(1000000); 
-    //         my_move(initial_speed,1,initial_speed,1);
-    //         usleep(1000000); 
-    //         my_turn(initial_speed,-90);
-    //         usleep(1000000); 
-    //         my_move(initial_speed,1,initial_speed,1);
-    //         usleep(500000); 
-    //         my_turn(initial_speed,90);
-    //         usleep(1000000); 
-    //         printf("finished");
-    //         my_move(0,0,0,0);
-    //         usleep(1000000);
-    //     }
-    //     // float gyro_data = read_mpu6050_yaw();
-    //     // error= -gyro_data;
-    //     // integral += error;
-    //     // derivative = error - last_error;
-    //     // output = Kp * error + Ki * integral + Kd * derivative;
-    //     // printf("output %f\n",output);
-    //     // last_error = error;
+    // my_turn(initial_speed,90);
+    // my_turn(initial_speed,-90);
+    while(1){
+        my_move(initial_speed,1,initial_speed,1);
+        int dis=tofReadDistance();
+        printf("%dmm\n",dis);
+        if(dis<=150){
+            my_move(0,0,0,0);
+            my_turn(initial_speed,90);
+            usleep(10000);
+            my_move(initial_speed,1,initial_speed,1);
+            usleep(500000);
+            my_turn(initial_speed,-90);            
+            usleep(10000);
+            my_move(initial_speed,1,initial_speed,1);
+            usleep(2000000);
+            // float data_z=read_mpu6050_yaw();
+            // printf("%f\n",data_z);
+            my_turn(initial_speed,-95);
+            usleep(10000);
+            my_move(initial_speed,1,initial_speed,1);
+            usleep(500000);
+            my_turn(initial_speed,90);
+            printf("finished");
+            my_move(0,0,0,0);
+            usleep(1000000);
+            break;
+        }
+        // float gyro_data = read_mpu6050_yaw();
+        // error= -gyro_data;
+        // integral += error;
+        // derivative = error - last_error;
+        // output = Kp * error + Ki * integral + Kd * derivative;
+        // printf("output %f\n",output);
+        // last_error = error;
 
-    //     // if(output>0){
-    //     //     int speed_now=15000;
-    //     //     output = min(output,1.0);
-    //     //     my_move(speed_now+(int)(additional_speed*output),1,(int)(speed_now-additional_speed),1);
-    //     //     delayMicroseconds(500);
-    //     // }else {
-    //     //     int speed_now=15000;
-    //     //     output = max(output,-1.0);
-    //     //     output=-output;
-    //     //     my_move(speed_now-(int)(additional_speed*output),1,(int)(speed_now+additional_speed),1);
-    //     //     delayMicroseconds(500);
-    //     // }
-    //     usleep(1000);
-    // }
+        // if(output>0){
+        //     int speed_now=15000;
+        //     output = min(output,1.0);
+        //     my_move(speed_now+(int)(additional_speed*output),1,(int)(speed_now-additional_speed),1);
+        //     delayMicroseconds(500);
+        // }else {
+        //     int speed_now=15000;
+        //     output = max(output,-1.0);
+        //     output=-output;
+        //     my_move(speed_now-(int)(additional_speed*output),1,(int)(speed_now+additional_speed),1);
+        //     delayMicroseconds(500);
+        // }
+        usleep(1000);
+    }
     cleanup();
     return 0;
 }

@@ -29,7 +29,7 @@ static int PWM_PIN = 6; // 9
 float Kp = 1;   // 比例系数
 float Ki = 0.1;  // 积分系数
 float Kd = 0.1;   // 微分系数       
-int initial_speed=20000,additional_speed=5000;
+int initial_speed=15000,additional_speed=5000;
 /*
 float Kp = 2.5;   // 比例系数
 float Ki = 0.01;  // 积分系数
@@ -37,9 +37,10 @@ float Kd = 1.0;   // 微分系数
 int initial_speed=10000,additional_speed=4000;
 */
 void my_turn(int speed,int angle){ //负左 正右
+    usleep(100000);
     reset();
+    usleep(100000);
     printf("--------%f\n",read_mpu6050_yaw());
-    usleep(1000000);
     float last_error = 0.0;      // 上一次误差
     float integral = 0.0;        // 积分项
     float derivative = 0.0;      // 微分项
@@ -50,12 +51,14 @@ void my_turn(int speed,int angle){ //负左 正右
     // right
     while(1){
         float gyro_data = read_mpu6050_yaw();
-        printf("z_date %f\n",gyro_data);
+        // printf("z_date %f\n",gyro_data);
+        usleep(1000);
         error = angle - gyro_data;
         integral += error;
         derivative = error - last_error;
         output = Kp * error + Ki * integral + Kd * derivative;
-        printf("my_turn_output %f\n",output);
+        // printf("my_turn_output %f\n",output);
+        usleep(1000);
         last_error = error;
         if(output>0){
             output = min(output,maxval)/maxval;
