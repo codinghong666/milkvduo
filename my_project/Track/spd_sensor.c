@@ -6,24 +6,32 @@
 #include <linux/i2c-dev.h>
 #include <wiringx.h>
 #include <math.h>
-int ir_sensor[8],reir_sensor[8];  // ir_sensor[0]对应最低位，ir_sensor[7]对应最高位
-int my_turn(int a[]){
+#include <signal.h>
+int spd_ir_sensor[8],spd_reir_sensor[8];  // ir_sensor[0]对应最低位，ir_sensor[7]对应最高位
+struct Spd{
+    int arg,flag;
+};
+struct Spd my_spd_sensor(int a[]){
     int sum=0,tot=0;
     for(int i=0;i<8;i++){
         sum+=(1-a[i])*(-4+i+(i>=4?1:0));
         tot+=(1-a[i]);
     }
     // printf("%d %d %d\n",sum,tot,sum/tot);
-    return sum/tot;
+    struct Spd x;
+    if(tot>0)
+        x.arg=sum/tot,x.flag=1;
+    else x.arg=0,x.flag=0;
+    return x;
 
 }
-int read_ir_sensors() {
+struct Spd read_spd_sensors() {
     int i2c_fd;
     unsigned char reg_addr = 0x30;  // 要读取的寄存器地址
     unsigned char data = 0;
 
     // 1. 打开 I2C 总线设备
-    i2c_fd = open("/dev/i2c-0", O_RDWR);
+    i2c_fd = open("/dev/i2c-1", O_RDWR);
     if (i2c_fd < 0) {
         perror("Failed to open /dev/i2c-0");
         exit(EXIT_FAILURE);
@@ -55,8 +63,8 @@ int read_ir_sensors() {
 
     // 6. 解析8个红外传感器状态
     for (int i = 0; i < 8; i++) {
-        ir_sensor[i] = (data >> i) & 0x01;  // 从低位到高位依次存储
-        reir_sensor[i] = ir_sensor[7-i];
+        spd_ir_sensor[i] = (data >> i) & 0x01;  // 从低位到高位依次存储
+        spd_reir_sensor[i] = spd_ir_sensor[7-i];
     }
     
     // 7. 打印结果
@@ -69,5 +77,5 @@ int read_ir_sensors() {
 
     // 8. 关闭 I2C 设备
     close(i2c_fd);
-    return my_turn(reir_sensor);
+    return my_spd_sensor(spd_reir_sensor);
 }

@@ -67,6 +67,6 @@ void my_move(int speed1, bool dir1, int speed2, bool dir2) {
     wiringXPWMSetPolarity(pwm_pin2, 0);  // 极性（0 或 1）
     wiringXPWMEnable(pwm_pin2, 1);       // 启用 PWM
 
-    usleep(1000);
+    usleep(100);
     return;
 }

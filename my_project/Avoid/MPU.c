@@ -22,21 +22,20 @@ float gyro_z_offset = 0.0f;
 GP7	10 SCL
 GP6 9 SDA
 */
-void cleanup() {
-    printf("释放资源...\n");
-    if (i2c_fd >= 0) {
-        close(i2c_fd);
-    }
-}
+// void cleanup() {
+//     printf("释放资源...\n");
+//     if (i2c_fd >= 0) {
+//         close(i2c_fd);
+//     }
+// }
 
-void sigint_handler(int sig) {
-    cleanup();
-    exit(0);
-}
+// void sigint_handler(int sig) {
+//     cleanup();
+//     exit(0);
+// }
 
 int16_t read_word(uint8_t reg_high) {
     unsigned char buf[2];
-    
     // 写入要读取的寄存器地址
     if (write(i2c_fd, &reg_high, 1) != 1) {
         perror("Failed to write register address");
@@ -53,6 +52,7 @@ int16_t read_word(uint8_t reg_high) {
 }
 
 void mpu6050_init() {
+    yaw_angle = 0;
     // 1. 打开 I2C 总线设备 (注意根据实际使用修改为i2c-0或i2c-3)
     i2c_fd = open("/dev/i2c-3", O_RDWR);
     if (i2c_fd < 0) {
@@ -128,7 +128,6 @@ void mpu6050_init() {
 
     usleep(100000); // 等待配置生效
 }
-
 void calibrate_gyro() {
     printf("正在校准陀螺仪，请保持静止...\n");
     int32_t sum = 0;
@@ -140,9 +139,14 @@ void calibrate_gyro() {
     gyro_z_offset = (float)sum / samples;
     printf("陀螺仪Z轴零偏: %.2f\n", gyro_z_offset);
 }
+void reset(){
+    yaw_angle = 0;
+    gyro_z_offset = 0.0f;
+    calibrate_gyro();
+}
 float read_mpu6050_yaw() {
     int16_t gz_raw = read_word(GYRO_ZOUT_H);
-    float gz = (gz_raw-gyro_z_offset) / GYRO_SENS;
+    float gz = (gz_raw-gyro_z_offset)/ GYRO_SENS;
     yaw_angle += gz * DT;
     
     // 限制角度范围在 -180° 到 180° 之间
@@ -153,19 +157,4 @@ float read_mpu6050_yaw() {
     }
     
     return yaw_angle;
-}
-
-int main() {
-    signal(SIGINT, sigint_handler);
-
-    mpu6050_init();
-    calibrate_gyro();
-    while (1) {
-        float current_yaw = read_mpu6050_yaw();
-        printf("当前转向角度: %.2f°\n", current_yaw);
-        usleep(10000); // 10ms
-    }
-
-    cleanup();
-    return 0;
 }

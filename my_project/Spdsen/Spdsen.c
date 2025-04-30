@@ -6,24 +6,32 @@
 #include <linux/i2c-dev.h>
 #include <wiringx.h>
 #include <math.h>
+#include <signal.h>
 int ir_sensor[8],reir_sensor[8];  // ir_sensor[0]对应最低位，ir_sensor[7]对应最高位
-int my_turn(int a[]){
+struct Spd{
+    int arg,flag;
+};
+struct Spd my_spd_sensor(int a[]){
     int sum=0,tot=0;
     for(int i=0;i<8;i++){
         sum+=(1-a[i])*(-4+i+(i>=4?1:0));
         tot+=(1-a[i]);
     }
     // printf("%d %d %d\n",sum,tot,sum/tot);
-    return sum/tot;
+    struct Spd x;
+    if(tot>0)
+        x.arg=sum/tot,x.flag=1;
+    else x.arg=0,x.flag=0;
+    return x;
 
 }
-int read_ir_sensors() {
+struct Spd read_spd_sensors() {
     int i2c_fd;
     unsigned char reg_addr = 0x30;  // 要读取的寄存器地址
     unsigned char data = 0;
 
     // 1. 打开 I2C 总线设备
-    i2c_fd = open("/dev/i2c-0", O_RDWR);
+    i2c_fd = open("/dev/i2c-1", O_RDWR);
     if (i2c_fd < 0) {
         perror("Failed to open /dev/i2c-0");
         exit(EXIT_FAILURE);
@@ -44,7 +52,7 @@ int read_ir_sensors() {
     }
 
     // 4. 延迟等待传感器准备数据
-    usleep(100);  // 1ms
+    usleep(1000);  // 1ms
 
     // 5. 读取1字节数据
     if (read(i2c_fd, &data, 1) != 1) {
@@ -60,14 +68,35 @@ int read_ir_sensors() {
     }
     
     // 7. 打印结果
-    // printf("Raw Data: 0x%02X\n", data);
-    // printf("IR Sensors Status:\n");
-    // for (int i = 7; i >= 0; i--) {
-    //     printf("IR%d: %d  ", i + 1, ir_sensor[i]);
-    // }
-    // printf("\n");
+    printf("Raw Data: 0x%02X\n", data);
+    printf("IR Sensors Status:\n");
+    for (int i = 7; i >= 0; i--) {
+        printf("IR%d: %d  ", i + 1, ir_sensor[i]);
+    }
+    printf("\n");
 
     // 8. 关闭 I2C 设备
     close(i2c_fd);
-    return my_turn(reir_sensor);
+    return my_spd_sensor(reir_sensor);
+}
+void cleanup(void) {
+    printf("程序退出，执行清理操作...\n");
+}
+
+void sigint_handler(int sig) {
+    cleanup();
+    exit(0);
+}
+
+int main() {
+    signal(SIGINT, sigint_handler); 
+    if(wiringXSetup("milkv_duo", NULL) == -1) {
+        wiringXGC();
+        return -1;
+    }
+    while(1){
+        struct Spd x=read_spd_sensors();
+        usleep(1000);
+    }
+
 }
