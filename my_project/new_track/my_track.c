@@ -27,8 +27,8 @@ float Kd = 1.4;   // 微分系数
 float P = 0.0, I = 0.0, D = 0.0;  
 int initial_speed=40000,additional_speed=6000,sub=7000;
 int cnt_mpu=0;
-// bool overflow=0;
-// short mpu_array[N];
+bool overflow=0;
+short mpu_array[N];
 /*
 float Kp = 2.5;   // 比例系数
 float Ki = 0.01;  // 积分系数
@@ -36,54 +36,54 @@ float Kd = 1.0;   // 微分系数
 int initial_speed=10000,additional_speed=4000;
 */
 
-// int get_max_mem_index(const char *dir_path) {
-//     DIR *dir = opendir(dir_path);
-//     if (dir == NULL) {
-//         perror("无法打开目录");
-//         return -1;
-//     }
+int get_max_mem_index(const char *dir_path) {
+    DIR *dir = opendir(dir_path);
+    if (dir == NULL) {
+        perror("无法打开目录");
+        return -1;
+    }
 
-//     struct dirent *entry;
-//     int max_index = -1;
-//     while ((entry = readdir(dir)) != NULL) {
-//         // 检查文件名是否匹配 mem_i 的格式
-//         if (strncmp(entry->d_name, "mem_", 4) == 0) {
-//             int index = 0;
-//             if (sscanf(entry->d_name, "mem_%d.txt", &index) == 1) {
-//                 if (index > max_index) {
-//                     max_index = index;
-//                 }
-//             }
-//         }
-//     }
-//     closedir(dir);
-//     return max_index;
-// }
+    struct dirent *entry;
+    int max_index = -1;
+    while ((entry = readdir(dir)) != NULL) {
+        // 检查文件名是否匹配 mem_i 的格式
+        if (strncmp(entry->d_name, "mem_", 4) == 0) {
+            int index = 0;
+            if (sscanf(entry->d_name, "mem_%d.txt", &index) == 1) {
+                if (index > max_index) {
+                    max_index = index;
+                }
+            }
+        }
+    }
+    closedir(dir);
+    return max_index;
+}
 
-// void write_to_new_file(int overflow, int cnt_mpu, int *mpu_array, const char *dir_path) {
-//     // 获取最大文件索引
-//     int max_index = get_max_mem_index(dir_path);
+void write_to_new_file(int overflow, int cnt_mpu, int *mpu_array, const char *dir_path) {
+    // 获取最大文件索引
+    int max_index = get_max_mem_index(dir_path);
 
-//     // 新文件的文件名
-//     char filename[MAX_FILENAME_LEN];
-//     snprintf(filename, sizeof(filename), "%s/mem_%d.txt", dir_path, max_index + 1);
+    // 新文件的文件名
+    char filename[MAX_FILENAME_LEN];
+    snprintf(filename, sizeof(filename), "%s/mem_%d.txt", dir_path, max_index + 1);
 
-//     // 打开文件并写入数据
-//     FILE *fp = fopen(filename, "w");
-//     if (fp == NULL) {
-//         perror("无法打开文件写入");
-//         return;
-//     }
+    // 打开文件并写入数据
+    FILE *fp = fopen(filename, "w");
+    if (fp == NULL) {
+        perror("无法打开文件写入");
+        return;
+    }
 
-//     fprintf(fp, "%d\n", overflow);
-//     fprintf(fp, "%d\n", cnt_mpu);
-//     for (int i = 0; i < cnt_mpu; ++i) {
-//         fprintf(fp, "%d ", mpu_array[i]);
-//     }
-//     fclose(fp);
+    fprintf(fp, "%d\n", overflow);
+    fprintf(fp, "%d\n", cnt_mpu);
+    for (int i = 0; i < cnt_mpu; ++i) {
+        fprintf(fp, "%d ", mpu_array[i]);
+    }
+    fclose(fp);
 
-//     printf("数据已写入文件: %s\n", filename);
-// }
+    printf("数据已写入文件: %s\n", filename);
+}
 
 void cleanup(void) {
     printf("程序退出，执行清理操作...\n");
@@ -91,8 +91,8 @@ void cleanup(void) {
     digitalWrite(ain2, LOW);
     digitalWrite(bin1, LOW);
     digitalWrite(bin2, LOW);
-    // const char *dir_path = "Trackdate"; 
-    // write_to_new_file(overflow, cnt_mpu, mpu_array, dir_path);
+    const char *dir_path = "Trackdate"; 
+    write_to_new_file(overflow, cnt_mpu, mpu_array, dir_path);
     // 关闭PWM，释放资源等
 }
 
@@ -165,9 +165,9 @@ int main() {
         integral+=error;
         derivative=error-last_error;    
         usleep(1000);  // 10ms
-        // if(cnt_mpu<=N-5)
-        //     mpu_array[++cnt_mpu]= (short)(read_mpu6050_yaw()*100);
-        // else overflow=1;
+        if(cnt_mpu<=N-5)
+            mpu_array[++cnt_mpu]= (short)(read_mpu6050_yaw()*100);
+        else overflow=1;
     }
     return 0;
 }
