@@ -70,36 +70,7 @@ int main() {
     tofInit(I2C_NUM, I2C_ADDR, 0);
     // my_turn(initial_speed,90);
     // my_turn(initial_speed,-90);
-    while(1){
-        my_move(initial_speed,1,initial_speed,1);
-        int dis=tofReadDistance();
-        printf("%dmm\n",dis);
-        if(dis<=150){
-            my_move(0,0,0,0);
-            my_turn(initial_speed,90);
-            usleep(10000);
-            my_move(initial_speed,1,initial_speed,1);
-            usleep(500000);
-            my_turn(initial_speed,-90);            
-            usleep(10000);
-            my_move(initial_speed,1,initial_speed,1);
-            usleep(2000000);
-            // float data_z=read_mpu6050_yaw();
-            // printf("%f\n",data_z);
-            my_turn(initial_speed,-95);
-            usleep(10000);
-            my_move(initial_speed,1,initial_speed,1);
-            usleep(500000);
-            my_turn(initial_speed,90);
-            printf("finished");
-            my_move(0,0,0,0);
-            usleep(1000000);
-            break;
-        }
-        usleep(1000);
-    }
-    // my_line(15000,2.0);
-    my_move(0,0,0,0);
+    my_line(25000, 3);
     cleanup();
     return 0;
 }

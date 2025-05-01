@@ -25,7 +25,7 @@ float Kp[2] = {2.5,1};   // 比例系数
 float Ki[2] = {0.01,0.0};  // 积分系数
 float Kd[2] = {1.0,0.0};   // 微分系数       
 float P[2] = {0.0,0.0}, I[2] = {0.0,0.0}, D[2] = {0.0,0.0}; // PID 输出
-int initial_speed=20000,additional_speed=1500;
+int initial_speed=15000,additional_speed=500;
 struct PPI{
     double x,y;
 };
@@ -145,7 +145,7 @@ int main() {
         }
         else {
             float ans=fmax(output[1],-1.0);
-            int speed_now=30000;
+            int speed_now=250000;
             my_move(speed_now,1,speed_now,1);
             delayMicroseconds(500);
         }
