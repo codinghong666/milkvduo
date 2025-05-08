@@ -11,7 +11,7 @@
 #include <signal.h>
 #include "tof.h"
 #include "my_turn.h"
-#include"line.h"
+#include "line.h"
 /* 
    I2C1_SDA -> SDA on VL53L0X Moudle
    I2C1_SCL -> SCL on VL53L0X Moudle
@@ -78,17 +78,22 @@ int main() {
             my_move(0,0,0,0);
             my_turn(initial_speed,90);
             usleep(10000);
-            my_move(initial_speed,1,initial_speed,1);
+            // my_move(initial_speed,1,initial_speed,1);
+            my_line(initial_speed,2.0);
             usleep(500000);
             my_turn(initial_speed,-90);            
             usleep(10000);
-            my_move(initial_speed,1,initial_speed,1);
+            // my_move(initial_speed,1,initial_speed,1);
+
+            my_line(initial_speed,2.0);
             usleep(2000000);
             // float data_z=read_mpu6050_yaw();
             // printf("%f\n",data_z);
             my_turn(initial_speed,-95);
             usleep(10000);
-            my_move(initial_speed,1,initial_speed,1);
+            // my_move(initial_speed,1,initial_speed,1);
+
+            my_line(initial_speed,2.0);
             usleep(500000);
             my_turn(initial_speed,90);
             printf("finished");

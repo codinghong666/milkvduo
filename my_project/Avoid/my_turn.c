@@ -37,9 +37,9 @@ float Kd = 1.0;   // 微分系数
 int initial_speed=10000,additional_speed=4000;
 */
 void my_turn(int speed,int angle){ //负左 正右
-    usleep(100000);
+    usleep(1000000);
     reset();
-    usleep(100000);
+    usleep(1000000);
     printf("--------%f\n",read_mpu6050_yaw());
     float last_error = 0.0;      // 上一次误差
     float integral = 0.0;        // 积分项

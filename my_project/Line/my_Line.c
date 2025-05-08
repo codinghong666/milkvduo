@@ -7,6 +7,7 @@
 #include <wiringx.h>
 #include <math.h>
 #include"my_move.h"
+#include<time.h>
 #include"mpu.h"
 #include <signal.h>
 #include "tof.h"
@@ -67,10 +68,12 @@ int main() {
     pinMode(bin2, PINMODE_OUTPUT);
     mpu6050_init();
     calibrate_gyro();
-    tofInit(I2C_NUM, I2C_ADDR, 0);
+    // tofInit(I2C_NUM, I2C_ADDR, 0);
     // my_turn(initial_speed,90);
     // my_turn(initial_speed,-90);
-    my_line(25000, 3);
+    my_line(100000, 2);
+
+
     cleanup();
     return 0;
 }

@@ -8,6 +8,9 @@
 #include <math.h>
 int ir_sensor[8],reir_sensor[8];  // ir_sensor[0]对应最低位，ir_sensor[7]对应最高位
 int weight[]={4,2,1,1,1,1,2,4};
+int i2c_fd;
+unsigned char reg_addr = 0x30;  // 要读取的寄存器地址
+unsigned char data = 0;
 int my_turn(int a[]){
     int sum=0,tot=0;
     for(int i=0;i<8;i++){
@@ -18,12 +21,7 @@ int my_turn(int a[]){
     return sum/tot;
 
 }
-int read_ir_sensors() {
-    int i2c_fd;
-    unsigned char reg_addr = 0x30;  // 要读取的寄存器地址
-    unsigned char data = 0;
-
-    // 1. 打开 I2C 总线设备
+void sensor_init(){
     i2c_fd = open("/dev/i2c-0", O_RDWR);
     if (i2c_fd < 0) {
         perror("Failed to open /dev/i2c-0");
@@ -36,16 +34,24 @@ int read_ir_sensors() {
         close(i2c_fd);
         exit(EXIT_FAILURE);
     }
+}
+void senosr_close(){
+    close(i2c_fd);
+}
+int read_ir_sensors() {
+
+
+    // 1. 打开 I2C 总线设备
 
     // 3. 写入寄存器地址 (0x30)
-    if (write(i2c_fd, &reg_addr, 1) != 1) {
-        perror("Failed to write register address");
-        close(i2c_fd);
-        exit(EXIT_FAILURE);
-    }
+    // if (write(i2c_fd, &reg_addr, 1) != 1) {
+    //     perror("Failed to write register address");
+    //     close(i2c_fd);
+    //     exit(EXIT_FAILURE);
+    // }
 
     // 4. 延迟等待传感器准备数据
-    usleep(60);  // 1ms
+    usleep(30);  // 1ms
 
     // 5. 读取1字节数据
     if (read(i2c_fd, &data, 1) != 1) {
@@ -69,6 +75,6 @@ int read_ir_sensors() {
     // printf("\n");
 
     // 8. 关闭 I2C 设备
-    close(i2c_fd);
+    // close(i2c_fd);
     return my_turn(reir_sensor);
 }

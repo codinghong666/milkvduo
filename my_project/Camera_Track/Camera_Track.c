@@ -25,7 +25,7 @@ float Kp[2] = {2.5,1};   // 比例系数
 float Ki[2] = {0.01,0.0};  // 积分系数
 float Kd[2] = {1.0,0.0};   // 微分系数       
 float P[2] = {0.0,0.0}, I[2] = {0.0,0.0}, D[2] = {0.0,0.0}; // PID 输出
-int initial_speed=15000,additional_speed=500;
+int initial_speed=10000,additional_speed=2500;
 struct PPI{
     double x,y;
 };
@@ -75,6 +75,7 @@ int main() {
     struct sockaddr_in server_addr, client_addr;
     socklen_t client_len = sizeof(client_addr);
     char buffer[BUFFER_SIZE];
+    char last_buffer[BUFFER_SIZE];
 
     // 创建 TCP 套接字
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
@@ -129,6 +130,10 @@ int main() {
         buffer[n] = '\0';  // 使字符串正确结束
         printf("Received data: %s", buffer);  // 不需要打印多余的换行符
         struct PPI result = split(buffer);
+        // if(strcmp(buffer,last_buffer)==0){
+        //     my_move(0,0,0,0);
+        //     continue;
+        // }
         if (initial_S == 0.0) {
             initial_S = result.y;
         }
@@ -164,7 +169,9 @@ int main() {
         last_error[0]=error[0], last_error[1]=error[1];
         integral[0]+=error[0], integral[1]+=error[1];
         derivative[0]=error[0]-last_error[0],derivative[1]=error[1]-last_error[1];
-        usleep(1000);   
+        usleep(10000);   
+        // my_move(0,0,0,0);
+        memcpy(last_buffer, buffer, strlen(buffer)+1);
     }
     // 关闭套接字
     close(client_fd);

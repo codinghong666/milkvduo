@@ -8,8 +8,6 @@
 #include <math.h>
 #include"my_sensor.h"
 #include"my_move.h"
-#include"mpu.h"
-#include"spd_sensor.h"
 #include <signal.h>
 #define min(x, y) ((x) < (y) ? (x) : (y))
 #define max(x, y) ((x) > (y) ? (x) : (y))
@@ -25,7 +23,7 @@ float Kp = 4;   // 比例系数  4，0.01，1
 float Ki = 0.01;  // 积分系数
 float Kd = 1.5;   // 微分系数       
 float P = 0.0, I = 0.0, D = 0.0;  
-int initial_speed=33000,additional_speed=4000,sub=4000; //30000,4000,4000
+int initial_speed=42000,additional_speed=4000,sub=4000; //30000,4000,4000
 // int cnt_mpu=0;
 // bool overflow=0;
 // short mpu_array[N];
@@ -91,7 +89,7 @@ void cleanup(void) {
     digitalWrite(ain2, LOW);
     digitalWrite(bin1, LOW);
     digitalWrite(bin2, LOW);
-    // senosr_close();
+    senosr_close(); 
     // const char *dir_path = "Trackdate"; 
     // write_to_new_file(overflow, cnt_mpu, mpu_array, dir_path);
     // 关闭PWM，释放资源等
@@ -112,7 +110,7 @@ int main() {
     pinMode(ain2, PINMODE_OUTPUT);
     pinMode(bin1, PINMODE_OUTPUT);
     pinMode(bin2, PINMODE_OUTPUT);
-    // senosr_init();
+    
     // mpu6050_init();
     // 舵机
     // wiringXPWMSetPeriod(PWM_PIN, 20000000);  // 20ms
@@ -120,19 +118,33 @@ int main() {
     // wiringXPWMSetPolarity(PWM_PIN, 0);       // 0-normal, 1-inversed
     // wiringXPWMEnable(PWM_PIN, 1);            // 1-enable, 0-disable
     printf("Reading IR sensors from I2C device 0x12, register 0x30...\n");
-
+    sensor_init();
+    printf("IN");
     while(1){
         // struct Spd now_spd=read_spd_sensors();
-        printf("IN");
+
         error=read_ir_sensors();
-        if(fabs(error)>5.0){
-            initial_speed=23000;
-        }else 
-            initial_speed=32000;
+        // printf("error: %f\n",error);
+
+            
         P=Kp*error;
         I=Ki*integral;
         D=Kd*derivative;
         output=P+I+D;
+        if(fabs(output)>7.0){
+            initial_speed=20000;
+        }
+        else if(fabs(output)>6.0){
+            initial_speed=23000;
+        }
+        else if(fabs(output)>5.0){
+            initial_speed=27000;
+        }
+        else if(fabs(output)>4.0){
+            initial_speed=35000;
+        }else {
+            initial_speed=40000;
+        }
         // if(now_spd.flag==1&&(now_spd.arg>=-2&&now_spd.arg<=2)&&(output>=-2&&output<=2))
         //     initial_speed=32000;
         // else initial_speed=32000;
@@ -155,7 +167,7 @@ int main() {
             // wiringXPWMSetDuty(PWM_PIN, y);
             int add=(int)ans*additional_speed;
             my_move(min(T,initial_speed+add),1,max(0,initial_speed-add-sub),1);
-            delayMicroseconds(500);
+            delayMicroseconds(400);
         }
         else {
             // printf("turn left\n");
@@ -165,12 +177,12 @@ int main() {
             // wiringXPWMSetDuty(PWM_PIN, y);
             int add=-(int)ans*additional_speed;
             my_move(max(0,initial_speed-add-sub),1,min(T,initial_speed+add),1);
-            delayMicroseconds(500);
+            delayMicroseconds(400);
         }
         last_error=error;
         integral+=error;
         derivative=error-last_error;    
-        usleep(100);  // 10ms
+        usleep(30);  // 10ms
         // if(cnt_mpu<=N-5)
         //     mpu_array[++cnt_mpu]= (short)(read_mpu6050_yaw()*100);
         // else overflow=1;
